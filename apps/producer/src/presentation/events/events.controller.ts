@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { PublishEventService } from '../../application/services/publish-event.service';
-import type { CreateEventDto } from './dto/create-event.dto';
+import { PublishEventService } from '../../application/services/publish-event.service';
+import { CreateEventDto } from './dto/create-event.dto';
 
 @ApiTags('events')
 @Controller('v1/events')

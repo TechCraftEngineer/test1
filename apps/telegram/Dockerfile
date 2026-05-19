@@ -24,5 +24,10 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/apps/telegram ./apps/telegram
 
+RUN addgroup -S app && adduser -S -G app app \
+  && chown -R app:app /app
+
+USER app
+
 EXPOSE 3003
 CMD ["bun", "run", "apps/telegram/dist/main.js"]

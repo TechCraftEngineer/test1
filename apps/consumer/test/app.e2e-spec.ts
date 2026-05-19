@@ -26,7 +26,9 @@ describe('Consumer (e2e)', () => {
     await app.init();
   });
 
-  afterAll(() => app.close());
+  afterAll(async () => {
+    await app.close();
+  });
 
   it('GET /health returns ok', () => {
     return request(app.getHttpServer())

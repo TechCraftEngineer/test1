@@ -9,7 +9,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
-    .setTitle('Producer (Sender) Service')
+    .setTitle('EventPing — Producer')
     .setDescription('Публикация событий в RabbitMQ с подтверждением доставки')
     .setVersion('1.0')
     .build();
@@ -19,4 +19,7 @@ async function bootstrap() {
   await app.listen(port);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Producer failed to start', error);
+  process.exit(1);
+});

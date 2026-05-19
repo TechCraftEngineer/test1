@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('Consumer (Receiver) Service')
+    .setTitle('EventPing — Consumer')
     .setDescription('Обработка событий из RabbitMQ с ack/nack и ретраями')
     .setVersion('1.0')
     .build();
