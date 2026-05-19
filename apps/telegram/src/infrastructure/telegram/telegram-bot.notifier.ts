@@ -1,6 +1,6 @@
-import { HttpService } from '@nestjs/axios';
+import type { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import type { TelegramNotifierPort } from '../../domain/ports/telegram-notifier.port';
 

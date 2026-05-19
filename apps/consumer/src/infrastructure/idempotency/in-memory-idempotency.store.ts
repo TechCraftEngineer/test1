@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  type OnModuleDestroy,
-  type OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type { IdempotencyStorePort } from '../../domain/ports/idempotency-store.port';
 
 /** Entries expire after this TTL (ms). */

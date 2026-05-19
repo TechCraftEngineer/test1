@@ -4,10 +4,10 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigService } from '@nestjs/config';
 import { type NotificationMessage, RABBITMQ } from '@repo/shared';
 import * as amqp from 'amqplib';
-import { SendNotificationService } from '../../application/services/send-notification.service';
+import type { SendNotificationService } from '../../application/services/send-notification.service';
 import { assertTelegramTopology } from './rabbitmq-topology';
 
 @Injectable()

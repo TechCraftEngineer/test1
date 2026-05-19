@@ -4,10 +4,10 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigService } from '@nestjs/config';
 import { type EventMessage, RABBITMQ, RETRY_HEADER } from '@repo/shared';
 import * as amqp from 'amqplib';
-import { ProcessEventService } from '../../application/services/process-event.service';
+import type { ProcessEventService } from '../../application/services/process-event.service';
 import { assertConsumerTopology } from './rabbitmq-topology';
 
 @Injectable()
