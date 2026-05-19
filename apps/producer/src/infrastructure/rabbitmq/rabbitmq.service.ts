@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { RABBITMQ } from '@repo/shared';
 import * as amqp from 'amqplib';
 import type { EventMessage } from '@repo/shared';
@@ -8,7 +8,7 @@ import type { EventMessage } from '@repo/shared';
 export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMqService.name);
   private connection?: amqp.ChannelModel;
-  private channel?: amqp.Channel;
+  private channel?: amqp.ConfirmChannel;
 
   constructor(private readonly config: ConfigService) {}
 
@@ -19,7 +19,7 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     }
 
     this.connection = await amqp.connect(url);
-    this.channel = await this.connection.createChannel();
+    this.channel = await this.connection.createConfirmChannel();
     await this.setupTopology();
 
     this.logger.log('RabbitMQ connected');
@@ -36,16 +36,13 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
       throw new Error('RabbitMQ channel is not available');
     }
 
-    const sent = this.channel.publish(
+    this.channel.publish(
       RABBITMQ.EXCHANGE_EVENTS,
       RABBITMQ.ROUTING_KEY_EVENT,
       Buffer.from(JSON.stringify(event)),
       { persistent: true },
     );
-
-    if (!sent) {
-      throw new Error('Failed to publish event to RabbitMQ');
-    }
+    await this.channel.waitForConfirms();
   }
 
   private async setupTopology(): Promise<void> {

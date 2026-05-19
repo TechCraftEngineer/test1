@@ -15,6 +15,8 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
   private channel?: amqp.Channel;
   private consumerTag?: string;
   private notificationHandler?: (notification: NotificationMessage) => Promise<void>;
+  private initialized = false;
+  private consuming = false;
 
   constructor(private readonly config: ConfigService) {}
 
@@ -28,6 +30,9 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
 
   setNotificationHandler(handler: (notification: NotificationMessage) => Promise<void>): void {
     this.notificationHandler = handler;
+    if (this.initialized && !this.consuming) {
+      void this.startConsuming();
+    }
   }
 
   private async connect(): Promise<void> {
@@ -43,12 +48,19 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     const prefetch = this.config.get<number>('rabbitmq.prefetch') ?? 10;
     await this.channel.prefetch(prefetch);
 
+    this.initialized = true;
+  }
+
+  private async startConsuming(): Promise<void> {
+    if (!this.channel || this.consuming) return;
+
     const { consumerTag } = await this.channel.consume(
       RABBITMQ.QUEUE_NOTIFICATIONS,
       (msg) => void this.handleMessage(msg),
       { noAck: false },
     );
     this.consumerTag = consumerTag;
+    this.consuming = true;
     this.logger.log('Consuming notifications.queue (manual ack)');
   }
 
@@ -70,7 +82,7 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     try {
       notification = JSON.parse(msg.content.toString()) as NotificationMessage;
     } catch (error) {
-      this.logger.error('Invalid JSON, sending to DLQ', error);
+      this.logger.error('Invalid JSON, message discarded', error);
       channel.nack(msg, false, false);
       return;
     }
