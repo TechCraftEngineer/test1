@@ -1,26 +1,18 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type { EventMessage, NotificationMessage } from '@repo/shared';
-import {
-  IDEMPOTENCY_STORE,
-  type IdempotencyStorePort,
-} from '../../domain/ports/idempotency-store.port';
-import {
-  NOTIFICATION_PUBLISHER,
-  type NotificationPublisherPort,
-} from '../../domain/ports/notification-publisher.port';
+import { IdempotencyService } from './idempotency/idempotency.service';
+import { RabbitMqService } from './rabbitmq/rabbitmq.service';
 
 @Injectable()
-export class ProcessEventService {
-  private readonly logger = new Logger(ProcessEventService.name);
+export class EventProcessorService {
+  private readonly logger = new Logger(EventProcessorService.name);
 
   constructor(
-    @Inject(IDEMPOTENCY_STORE)
-    private readonly idempotency: IdempotencyStorePort,
-    @Inject(NOTIFICATION_PUBLISHER)
-    private readonly notificationPublisher: NotificationPublisherPort,
+    private readonly idempotency: IdempotencyService,
+    private readonly rabbitmq: RabbitMqService,
   ) {}
 
-  async execute(event: EventMessage): Promise<void> {
+  async process(event: EventMessage): Promise<void> {
     if (!this.idempotency.claim(event.id)) {
       this.logger.warn(`Duplicate event skipped: ${event.id}`);
       return;
@@ -40,7 +32,7 @@ export class ProcessEventService {
         sourceEvent: event,
       };
 
-      await this.notificationPublisher.publish(notification);
+      await this.rabbitmq.publishNotification(notification);
       this.logger.log(`Event ${event.id} processed successfully`);
     } catch (error) {
       this.idempotency.release(event.id);

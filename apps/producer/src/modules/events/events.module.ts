@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PublishEventService } from '../../application/services/publish-event.service';
-import { RabbitMqModule } from '../../infrastructure/rabbitmq/rabbitmq.module';
 import { EventsController } from './events.controller';
+import { EventsService } from './events.service';
+import { RabbitMqModule } from '../../infrastructure/rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [RabbitMqModule],
   controllers: [EventsController],
-  providers: [PublishEventService],
+  providers: [EventsService],
 })
 export class EventsModule {}

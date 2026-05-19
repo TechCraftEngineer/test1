@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: rabbitmq:3.13-management-alpine
+    image: rabbitmq:4.3.0-management-alpine
     ports:
       - '5672:5672'
       - '15672:15672'
@@ -16,7 +16,11 @@ services:
   producer:
     build:
       context: .
-      dockerfile: apps/producer/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        APP: '@repo/producer'
+        APP_ENTRY: apps/producer/dist/main.js
+        PORT: '3001'
     ports:
       - '3001:3001'
     environment:
@@ -29,7 +33,11 @@ services:
   consumer:
     build:
       context: .
-      dockerfile: apps/consumer/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        APP: '@repo/consumer'
+        APP_ENTRY: apps/consumer/dist/main.js
+        PORT: '3002'
     ports:
       - '3002:3002'
     environment:
@@ -42,7 +50,11 @@ services:
   telegram:
     build:
       context: .
-      dockerfile: apps/telegram/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        APP: '@repo/telegram'
+        APP_ENTRY: apps/telegram/dist/main.js
+        PORT: '3003'
     ports:
       - '3003:3003'
     env_file:
