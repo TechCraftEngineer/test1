@@ -1,6 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import type { EventMessage } from '@repo/shared';
-import { v4 as uuidv4 } from 'uuid';
 import { RabbitMqService } from '../../infrastructure/rabbitmq/rabbitmq.service';
 import type { CreateEventDto } from './dto/create-event.dto';
 
@@ -12,7 +12,7 @@ export class EventsService {
 
   async publish(dto: CreateEventDto): Promise<EventMessage> {
     const event: EventMessage = {
-      id: dto.id ?? uuidv4(),
+      id: dto.id ?? randomUUID(),
       type: dto.type,
       payload: dto.payload,
       createdAt: new Date().toISOString(),

@@ -2,8 +2,7 @@ import { type INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { EVENT_PUBLISHER } from '../src/domain/ports/event-publisher.port';
-import { RabbitMqEventPublisher } from '../src/infrastructure/rabbitmq/rabbitmq-event.publisher';
+import { RabbitMqService } from '../src/infrastructure/rabbitmq/rabbitmq.service';
 
 describe('Producer (e2e)', () => {
   let app: INestApplication;
@@ -12,14 +11,16 @@ describe('Producer (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(RabbitMqEventPublisher)
-      .useValue({ onModuleInit: jest.fn(), onModuleDestroy: jest.fn() })
-      .overrideProvider(EVENT_PUBLISHER)
-      .useValue({ publish: jest.fn().mockResolvedValue(undefined) })
+      .overrideProvider(RabbitMqService)
+      .useValue({
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+        publishEvent: jest.fn().mockResolvedValue(undefined),
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     app.setGlobalPrefix('api');
     await app.init();
   });
