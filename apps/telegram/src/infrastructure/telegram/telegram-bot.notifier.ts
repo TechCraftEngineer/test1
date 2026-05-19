@@ -27,7 +27,11 @@ export class TelegramBotNotifier implements TelegramNotifierPort {
       throw new Error('TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be configured');
     }
 
-    const baseUrl = this.config.get<string>('telegram.apiBaseUrl');
+    const configuredBaseUrl = this.config.get<string>('telegram.apiBaseUrl');
+    const baseUrl = (configuredBaseUrl?.trim() || 'https://api.telegram.org').replace(
+      /\/+$/,
+      '',
+    );
     const url = `${baseUrl}/bot${token}/sendMessage`;
 
     const { data } = await firstValueFrom(

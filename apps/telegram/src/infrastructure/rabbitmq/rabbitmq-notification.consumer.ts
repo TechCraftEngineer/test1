@@ -74,7 +74,7 @@ export class RabbitMqNotificationConsumer implements OnModuleInit, OnModuleDestr
         `Failed to send notification for ${notification.eventId}`,
         error instanceof Error ? error.stack : error,
       );
-      channel.nack(msg, true, false);
+      channel.nack(msg, false, true);
     }
   }
 }

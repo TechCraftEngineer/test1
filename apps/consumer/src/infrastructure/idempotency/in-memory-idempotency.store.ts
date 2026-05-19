@@ -1,19 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type { IdempotencyStorePort } from '../../domain/ports/idempotency-store.port';
 
+/** Entries expire after this TTL (ms). */
 const TTL_MS = 60 * 60 * 1000;
 
-@Injectable()
-export class InMemoryIdempotencyStore implements IdempotencyStorePort {
-  private readonly store = new Map<string, number>();
+const EVICT_INTERVAL_MS = 60 * 1000;
 
-  has(eventId: string): boolean {
-    this.evictExpired();
-    return this.store.has(eventId);
+/**
+ * Ephemeral in-memory idempotency store (Map + TTL_MS).
+ * All entries are lost on process restart and are not shared across instances,
+ * so idempotency is not guaranteed under horizontal scaling.
+ * Suitable for development and testing only; use Redis, Postgres, or another
+ * persistent/clustered store in production via {@link IdempotencyStorePort}.
+ */
+@Injectable()
+export class InMemoryIdempotencyStore
+  implements IdempotencyStorePort, OnModuleInit, OnModuleDestroy
+{
+  private readonly store = new Map<string, number>();
+  private evictTimer?: ReturnType<typeof setInterval>;
+
+  onModuleInit(): void {
+    this.evictTimer = setInterval(() => this.evictExpired(), EVICT_INTERVAL_MS);
   }
 
-  add(eventId: string): void {
+  onModuleDestroy(): void {
+    if (this.evictTimer !== undefined) {
+      clearInterval(this.evictTimer);
+      this.evictTimer = undefined;
+    }
+  }
+
+  claim(eventId: string): boolean {
+    if (this.store.has(eventId)) {
+      return false;
+    }
     this.store.set(eventId, Date.now() + TTL_MS);
+    return true;
+  }
+
+  release(eventId: string): void {
+    this.store.delete(eventId);
   }
 
   private evictExpired(): void {

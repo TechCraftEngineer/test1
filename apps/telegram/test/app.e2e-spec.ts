@@ -9,6 +9,9 @@ describe('Telegram (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
+    process.env.TELEGRAM_BOT_TOKEN ??= 'test-token';
+    process.env.TELEGRAM_CHAT_ID ??= '123456789';
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -22,7 +25,11 @@ describe('Telegram (e2e)', () => {
     await app.init();
   });
 
-  afterAll(() => app.close());
+  afterAll(async () => {
+    if (app) {
+      await app.close();
+    }
+  });
 
   it('GET /health returns ok', () => {
     return request(app.getHttpServer())

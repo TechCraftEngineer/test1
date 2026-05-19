@@ -24,5 +24,10 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/apps/producer ./apps/producer
 
+RUN addgroup -S app && adduser -S -G app app \
+  && chown -R app:app /app
+
+USER app
+
 EXPOSE 3001
 CMD ["bun", "run", "apps/producer/dist/main.js"]

@@ -21,27 +21,31 @@ export class ProcessEventService {
   ) {}
 
   async execute(event: EventMessage): Promise<void> {
-    if (this.idempotency.has(event.id)) {
+    if (!this.idempotency.claim(event.id)) {
       this.logger.warn(`Duplicate event skipped: ${event.id}`);
       return;
     }
 
     this.logger.log(`Processing event ${event.id} [${event.type}]`);
 
-    if (event.type === 'simulate.failure') {
-      throw new Error(`Simulated failure for event ${event.id}`);
+    try {
+      if (event.type === 'simulate.failure') {
+        throw new Error(`Simulated failure for event ${event.id}`);
+      }
+
+      const notification: NotificationMessage = {
+        eventId: event.id,
+        channel: 'telegram',
+        text: this.formatNotification(event),
+        sourceEvent: event,
+      };
+
+      await this.notificationPublisher.publish(notification);
+      this.logger.log(`Event ${event.id} processed successfully`);
+    } catch (error) {
+      this.idempotency.release(event.id);
+      throw error;
     }
-
-    const notification: NotificationMessage = {
-      eventId: event.id,
-      channel: 'telegram',
-      text: this.formatNotification(event),
-      sourceEvent: event,
-    };
-
-    await this.notificationPublisher.publish(notification);
-    this.idempotency.add(event.id);
-    this.logger.log(`Event ${event.id} processed successfully`);
   }
 
   private formatNotification(event: EventMessage): string {

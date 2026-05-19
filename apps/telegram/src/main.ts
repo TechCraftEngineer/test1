@@ -8,13 +8,13 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = new DocumentBuilder()
-    .setTitle('Telegram Notification Service')
+    .setTitle('EventPing — Telegram')
     .setDescription('Отправка уведомлений в Telegram через Bot API')
     .setVersion('1.0')
     .build();
   SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, config));
 
-  const port = process.env.TELEGRAM_PORT ?? 3003;
+  const port = parseInt(process.env.TELEGRAM_PORT ?? '3003', 10);
   await app.listen(port);
 }
 

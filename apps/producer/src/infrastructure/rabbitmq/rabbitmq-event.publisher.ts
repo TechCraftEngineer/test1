@@ -41,7 +41,10 @@ export class RabbitMqEventPublisher
   }
 
   async publish(event: EventMessage): Promise<void> {
-    const retries = this.config.get<number>('rabbitmq.publishRetries') ?? 3;
+    const retries = Math.max(
+      1,
+      this.config.get<number>('rabbitmq.publishRetries') ?? 3,
+    );
     let lastError: Error | undefined;
 
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -55,8 +58,22 @@ export class RabbitMqEventPublisher
           `Publish failed for ${event.id} (attempt ${attempt}/${retries}): ${lastError.message}`,
         );
         if (attempt < retries) {
-          await this.reconnect();
-          await this.delay(attempt * 500);
+          try {
+            await this.reconnect();
+          } catch (reconnectError) {
+            this.logger.warn(
+              `Reconnect failed for ${event.id} (attempt ${attempt}/${retries})`,
+              reconnectError instanceof Error ? reconnectError.stack : reconnectError,
+            );
+          }
+          try {
+            await this.delay(attempt * 500);
+          } catch (delayError) {
+            this.logger.warn(
+              `Delay interrupted for ${event.id} (attempt ${attempt}/${retries})`,
+              delayError instanceof Error ? delayError.stack : delayError,
+            );
+          }
         }
       }
     }

@@ -22,7 +22,7 @@ export async function assertConsumerTopology(channel: Channel): Promise<void> {
   await channel.assertQueue(RABBITMQ.QUEUE_EVENTS_RETRY, {
     durable: true,
     arguments: {
-      'x-message-ttl': 5000,
+      'x-message-ttl': 15000,
       'x-dead-letter-exchange': RABBITMQ.EXCHANGE_EVENTS,
       'x-dead-letter-routing-key': RABBITMQ.ROUTING_KEY_EVENT,
     },

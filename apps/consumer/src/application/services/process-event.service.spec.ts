@@ -5,8 +5,8 @@ import { ProcessEventService } from './process-event.service';
 
 describe('ProcessEventService', () => {
   const idempotency: jest.Mocked<IdempotencyStorePort> = {
-    has: jest.fn(),
-    add: jest.fn(),
+    claim: jest.fn(),
+    release: jest.fn(),
   };
   const publisher: jest.Mocked<NotificationPublisherPort> = {
     publish: jest.fn().mockResolvedValue(undefined),
@@ -23,22 +23,23 @@ describe('ProcessEventService', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('skips duplicate events', async () => {
-    idempotency.has.mockReturnValue(true);
+    idempotency.claim.mockReturnValue(false);
     await service.execute(event);
     expect(publisher.publish).not.toHaveBeenCalled();
   });
 
   it('publishes notification for new events', async () => {
-    idempotency.has.mockReturnValue(false);
+    idempotency.claim.mockReturnValue(true);
     await service.execute(event);
     expect(publisher.publish).toHaveBeenCalled();
-    expect(idempotency.add).toHaveBeenCalledWith(event.id);
+    expect(idempotency.release).not.toHaveBeenCalled();
   });
 
-  it('throws on simulate.failure type', async () => {
-    idempotency.has.mockReturnValue(false);
+  it('releases claim on simulate.failure', async () => {
+    idempotency.claim.mockReturnValue(true);
     await expect(
       service.execute({ ...event, type: 'simulate.failure' }),
     ).rejects.toThrow('Simulated failure');
+    expect(idempotency.release).toHaveBeenCalledWith(event.id);
   });
 });
