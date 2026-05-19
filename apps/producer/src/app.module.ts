@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './config/configuration';
-import { EventsModule } from './presentation/events/events.module';
+import configuration from './common/config/configuration';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [

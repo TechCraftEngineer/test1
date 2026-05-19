@@ -2,8 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { RabbitMqEventConsumer } from '../src/infrastructure/rabbitmq/rabbitmq-event.consumer';
-import { RabbitMqNotificationPublisher } from '../src/infrastructure/rabbitmq/rabbitmq-notification.publisher';
+import { RabbitMqService } from '../src/infrastructure/rabbitmq/rabbitmq.service';
 
 describe('Consumer (e2e)', () => {
   let app: INestApplication;
@@ -12,13 +11,12 @@ describe('Consumer (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(RabbitMqEventConsumer)
-      .useValue({ onModuleInit: jest.fn(), onModuleDestroy: jest.fn() })
-      .overrideProvider(RabbitMqNotificationPublisher)
+      .overrideProvider(RabbitMqService)
       .useValue({
         onModuleInit: jest.fn(),
         onModuleDestroy: jest.fn(),
-        publish: jest.fn(),
+        setEventHandler: jest.fn(),
+        publishNotification: jest.fn(),
       })
       .compile();
 

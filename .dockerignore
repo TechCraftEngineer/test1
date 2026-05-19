@@ -1,0 +1,16 @@
+node_modules
+**/node_modules
+.git
+.turbo
+**/.turbo
+dist
+**/dist
+coverage
+out
+.env
+.env.*
+**/*.tsbuildinfo
+**/*.log
+.DS_Store
+*.md
+agent-transcripts

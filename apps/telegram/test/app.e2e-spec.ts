@@ -2,8 +2,8 @@ import type { INestApplication } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { TELEGRAM_NOTIFIER } from '../src/domain/ports/telegram-notifier.port';
-import { RabbitMqNotificationConsumer } from '../src/infrastructure/rabbitmq/rabbitmq-notification.consumer';
+import { RabbitMqService } from '../src/infrastructure/rabbitmq/rabbitmq.service';
+import { TelegramService } from '../src/infrastructure/telegram/telegram.service';
 
 describe('Telegram (e2e)', () => {
   let app: INestApplication;
@@ -15,9 +15,13 @@ describe('Telegram (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(RabbitMqNotificationConsumer)
-      .useValue({ onModuleInit: jest.fn(), onModuleDestroy: jest.fn() })
-      .overrideProvider(TELEGRAM_NOTIFIER)
+      .overrideProvider(RabbitMqService)
+      .useValue({
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+        setNotificationHandler: jest.fn(),
+      })
+      .overrideProvider(TelegramService)
       .useValue({ sendMessage: jest.fn().mockResolvedValue(undefined) })
       .compile();
 
