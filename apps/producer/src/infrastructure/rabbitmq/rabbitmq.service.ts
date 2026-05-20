@@ -47,7 +47,42 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
 
     if (!sent) {
       const channel = this.channel;
-      await new Promise<void>((resolve) => channel.once('drain', resolve));
+      const drainTimeoutMs =
+        this.config.get<number>('rabbitmq.drainTimeoutMs') ?? 30_000;
+      await new Promise<void>((resolve, reject) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+
+        const cleanup = () => {
+          clearTimeout(timer);
+          channel.removeListener('drain', onDrain);
+          channel.removeListener('error', onError);
+          channel.removeListener('close', onClose);
+        };
+
+        const onDrain = () => {
+          cleanup();
+          resolve();
+        };
+        const onError = (err: Error) => {
+          cleanup();
+          reject(
+            new Error(`RabbitMQ channel error while waiting for drain: ${err.message}`),
+          );
+        };
+        const onClose = () => {
+          cleanup();
+          reject(new Error('RabbitMQ channel closed while waiting for drain'));
+        };
+
+        channel.once('drain', onDrain);
+        channel.once('error', onError);
+        channel.once('close', onClose);
+
+        timer = setTimeout(() => {
+          cleanup();
+          reject(new Error(`RabbitMQ drain wait timed out after ${drainTimeoutMs}ms`));
+        }, drainTimeoutMs);
+      });
     }
 
     await this.channel.waitForConfirms();

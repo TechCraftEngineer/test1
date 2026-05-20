@@ -42,9 +42,9 @@ describe('Telegram (e2e)', () => {
       .expect({ status: 'ok', service: 'telegram' });
   });
 
-  it('POST /v1/notifications/send', () => {
+  it('POST /notifications/send', () => {
     return request(app.getHttpServer())
-      .post('/v1/notifications/send')
+      .post('/notifications/send')
       .send({ text: 'Test message' })
       .expect(201)
       .expect({ status: 'sent' });

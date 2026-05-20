@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from '@repo/health';
@@ -11,7 +12,7 @@ import { RabbitMqModule } from './infrastructure/rabbitmq/rabbitmq.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      envFilePath: '../../.env',
+      envFilePath: path.resolve(__dirname, '../../.env'),
     }),
     RabbitMqModule,
     EventProcessorModule,

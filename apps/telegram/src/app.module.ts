@@ -3,9 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from '@repo/health';
 import configuration from './common/config/configuration';
 import { NotificationBootstrapService } from './infrastructure/notification-bootstrap.service';
-import { NotificationHandlerService } from './infrastructure/notification-handler.service';
+import { NotificationHandlerModule } from './infrastructure/notification-handler.module';
 import { RabbitMqModule } from './infrastructure/rabbitmq/rabbitmq.module';
-import { TelegramModule } from './infrastructure/telegram/telegram.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -15,11 +14,11 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       load: [configuration],
       envFilePath: '../../.env',
     }),
-    TelegramModule,
+    NotificationHandlerModule,
     RabbitMqModule,
     HealthModule.forService('telegram'),
     NotificationsModule,
   ],
-  providers: [NotificationHandlerService, NotificationBootstrapService],
+  providers: [NotificationBootstrapService],
 })
 export class AppModule {}
