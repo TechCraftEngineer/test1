@@ -17,7 +17,6 @@ export class EventsService {
       payload: dto.payload,
       createdAt: new Date().toISOString(),
     };
-
     await this.rabbitmq.publishEvent(event);
     this.logger.log(`Event published: ${event.id} [${event.type}]`);
 

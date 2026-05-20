@@ -9,28 +9,25 @@ import type { EventMessage } from '@repo/shared';
 import { RABBITMQ, RETRY_TTL_MS } from '@repo/shared';
 import * as amqp from 'amqplib';
 
+const RECONNECT_DELAY_MS = 5000;
+const MAX_RECONNECT_ATTEMPTS = 10;
+
 @Injectable()
 export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMqService.name);
   private connection?: amqp.ChannelModel;
   private channel?: amqp.ConfirmChannel;
+  private isDestroyed = false;
+  private reconnectAttempts = 0;
 
   constructor(private readonly config: ConfigService) {}
 
   async onModuleInit(): Promise<void> {
-    const url = this.config.get<string>('rabbitmq.url');
-    if (!url) {
-      throw new Error('rabbitmq.url is not configured');
-    }
-
-    this.connection = await amqp.connect(url);
-    this.channel = await this.connection.createConfirmChannel();
-    await this.setupTopology();
-
-    this.logger.log('RabbitMQ connected');
+    await this.connect();
   }
 
   async onModuleDestroy(): Promise<void> {
+    this.isDestroyed = true;
     await this.channel?.close();
     await this.connection?.close();
     this.logger.log('RabbitMQ disconnected');
@@ -54,6 +51,58 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     }
 
     await this.channel.waitForConfirms();
+  }
+
+  private async connect(): Promise<void> {
+    const url = this.config.get<string>('rabbitmq.url');
+    if (!url) {
+      throw new Error('rabbitmq.url is not configured');
+    }
+
+    this.connection = await amqp.connect(url);
+    this.channel = await this.connection.createConfirmChannel();
+    await this.setupTopology();
+
+    this.reconnectAttempts = 0;
+    this.logger.log('RabbitMQ connected');
+
+    this.connection.on('error', (err) => {
+      this.logger.error('RabbitMQ connection error', err);
+    });
+
+    this.connection.on('close', () => {
+      if (!this.isDestroyed) {
+        this.logger.warn('RabbitMQ connection closed, reconnecting...');
+        this.channel = undefined;
+        this.connection = undefined;
+        void this.scheduleReconnect();
+      }
+    });
+  }
+
+  private async scheduleReconnect(): Promise<void> {
+    if (this.isDestroyed) return;
+
+    if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      this.logger.error(
+        `RabbitMQ reconnect failed after ${MAX_RECONNECT_ATTEMPTS} attempts. Giving up.`,
+      );
+      return;
+    }
+
+    this.reconnectAttempts++;
+    this.logger.log(
+      `Reconnect attempt ${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${RECONNECT_DELAY_MS}ms`,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, RECONNECT_DELAY_MS));
+
+    try {
+      await this.connect();
+    } catch (err) {
+      this.logger.error('Reconnect attempt failed', err);
+      void this.scheduleReconnect();
+    }
   }
 
   private async setupTopology(): Promise<void> {

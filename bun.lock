@@ -8,7 +8,7 @@
         "@biomejs/biome": "^2.4.15",
         "@types/node": "^25.9.1",
         "turbo": "^2.9.14",
-        "typescript": "^6.0.3",
+        "typescript": "^5.8.3",
       },
     },
     "apps/consumer": {
@@ -38,7 +38,7 @@
         "supertest": "^7.2.2",
         "ts-jest": "^29.4.10",
         "ts-node": "^10.9.2",
-        "typescript": "^6.0.3",
+        "typescript": "^5.8.3",
       },
     },
     "apps/producer": {
@@ -72,7 +72,7 @@
         "supertest": "^7.2.2",
         "ts-jest": "^29.4.10",
         "ts-node": "^10.9.2",
-        "typescript": "^6.0.3",
+        "typescript": "^5.8.3",
       },
     },
     "apps/telegram": {
@@ -107,7 +107,7 @@
         "supertest": "^7.2.2",
         "ts-jest": "^29.4.10",
         "ts-node": "^10.9.2",
-        "typescript": "^6.0.3",
+        "typescript": "^5.8.3",
       },
     },
     "packages/health": {
@@ -117,7 +117,7 @@
         "@nestjs/common": "^11.1.21",
         "@nestjs/core": "^11.1.21",
         "reflect-metadata": "^0.2.2",
-        "typescript": "^6.0.3",
+        "typescript": "^5.8.3",
       },
       "peerDependencies": {
         "@nestjs/common": ">=10",
@@ -128,7 +128,7 @@
       "name": "@repo/shared",
       "version": "1.0.0",
       "devDependencies": {
-        "typescript": "^6.0.3",
+        "typescript": "^5.8.3",
       },
     },
   },
@@ -1259,7 +1259,7 @@
 
     "typedarray": ["typedarray@0.0.6", "", {}, "sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA=="],
 
-    "typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "uglify-js": ["uglify-js@3.19.3", "", { "bin": { "uglifyjs": "bin/uglifyjs" } }, "sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ=="],
 
@@ -1390,8 +1390,6 @@
     "@jest/transform/jest-regex-util": ["jest-regex-util@29.6.3", "", {}, "sha512-KJJBsRCyyLNWCNBOvZyRDnAIfUiRJ8v+hOBQYGn8gDyF3UegwiP4gwRR3/SDa42g1YbVycTidUF3rKjyLFDWbg=="],
 
     "@jest/types/@types/node": ["@types/node@25.9.0", "", { "dependencies": { "undici-types": ">=7.24.0 <7.24.7" } }, "sha512-AOQwYUNolgy3VosiRqXrACUXTN8nJUtPl7FJXMqZVyxiiCLhQuG3jXKvCS1ALr+Y2OmZhzzLVlYPEqJaiqkaJQ=="],
-
-    "@nestjs/cli/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "@types/amqplib/@types/node": ["@types/node@20.19.41", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-ECymXOukMnOoVkC2bb1Vc/w/836DXncOg5m8Xj1RH7xSHZJWNYY6Zh7EH477vcnD5egKNNfy2RpNOmuChhFPgQ=="],
 
