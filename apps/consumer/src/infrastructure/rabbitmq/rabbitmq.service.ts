@@ -218,6 +218,9 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     await this.channel.assertExchange(RABBITMQ.EXCHANGE_NOTIFICATIONS, 'topic', {
       durable: true,
     });
+    await this.channel.assertExchange(RABBITMQ.EXCHANGE_NOTIFICATIONS_DLX, 'topic', {
+      durable: true,
+    });
 
     await this.channel.assertQueue(RABBITMQ.QUEUE_EVENTS_DLQ, { durable: true });
     await this.channel.bindQueue(
@@ -253,7 +256,20 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
       RABBITMQ.ROUTING_KEY_EVENT,
     );
 
-    await this.channel.assertQueue(RABBITMQ.QUEUE_NOTIFICATIONS, { durable: true });
+    await this.channel.assertQueue(RABBITMQ.QUEUE_NOTIFICATIONS_DLQ, { durable: true });
+    await this.channel.bindQueue(
+      RABBITMQ.QUEUE_NOTIFICATIONS_DLQ,
+      RABBITMQ.EXCHANGE_NOTIFICATIONS_DLX,
+      RABBITMQ.ROUTING_KEY_NOTIFICATION_DLQ,
+    );
+
+    await this.channel.assertQueue(RABBITMQ.QUEUE_NOTIFICATIONS, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': RABBITMQ.EXCHANGE_NOTIFICATIONS_DLX,
+        'x-dead-letter-routing-key': RABBITMQ.ROUTING_KEY_NOTIFICATION_DLQ,
+      },
+    });
     await this.channel.bindQueue(
       RABBITMQ.QUEUE_NOTIFICATIONS,
       RABBITMQ.EXCHANGE_NOTIFICATIONS,
