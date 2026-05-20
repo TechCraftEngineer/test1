@@ -5,7 +5,11 @@ import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath: '../../.env',
+    }),
     EventsModule,
   ],
 })

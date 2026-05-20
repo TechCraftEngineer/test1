@@ -4,8 +4,8 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
-import { type NotificationMessage, RABBITMQ } from '@repo/shared';
+import { ConfigService } from '@nestjs/config';
+import { NotificationMessage, RABBITMQ } from '@repo/shared';
 import * as amqp from 'amqplib';
 
 @Injectable()

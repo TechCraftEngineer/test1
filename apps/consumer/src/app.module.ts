@@ -8,7 +8,11 @@ import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath: '../../.env',
+    }),
     RabbitMqModule,
     EventProcessorModule,
     HealthModule,

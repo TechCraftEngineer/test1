@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { EventMessage } from '@repo/shared';
 import { v7 as uuidv7 } from 'uuid';
-import type { RabbitMqService } from '../../infrastructure/rabbitmq/rabbitmq.service';
+import { RabbitMqService } from '../../infrastructure/rabbitmq/rabbitmq.service';
 import type { CreateEventDto } from './dto/create-event.dto';
 
 @Injectable()

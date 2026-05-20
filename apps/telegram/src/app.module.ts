@@ -10,7 +10,11 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath: '../../.env',
+    }),
     TelegramModule,
     RabbitMqModule,
     HealthModule,
