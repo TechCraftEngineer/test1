@@ -5,7 +5,7 @@
   "scripts": {
     "build": "nest build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "dev": "nest start --watch",
+    "dev": "nest start --watch --preserveWatchOutput",
     "start": "node dist/main",
     "test": "jest",
     "test:e2e": "jest --config ./test/jest-e2e.json"
