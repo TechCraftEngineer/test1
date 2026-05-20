@@ -32,7 +32,7 @@ docker compose up -d rabbitmq
 bun run dev
 ```
 
-Сервисы: producer — http://localhost:3001, consumer — http://localhost:3002, telegram — http://localhost:3003.
+Сервисы: producer — <http://localhost:3001>, consumer — <http://localhost:3002>, telegram — <http://localhost:3003>.
 
 ### Всё в Docker
 
@@ -45,14 +45,14 @@ docker compose up --build
 ### Проверка
 
 ```bash
-curl -X POST http://localhost:3001/api/v1/events \
+curl -X POST http://localhost:3001/api/events \
   -H "Content-Type: application/json" \
   -d '{"type":"order.created","payload":{"orderId":42}}'
 ```
 
 В Telegram должно прийти уведомление.
 
-RabbitMQ Management UI: http://localhost:15672 (логин `guest`, пароль `guest`).
+RabbitMQ Management UI: <http://localhost:15672> (логин `guest`, пароль `guest`).
 
 ## Telegram: токен и chat id
 
@@ -93,6 +93,16 @@ TELEGRAM_CHAT_ID=123456789
 ```
 
 Перезапустите сервисы после изменения `.env`.
+
+## Swagger UI
+
+Swagger доступен только в **producer**.
+
+После запуска откройте в браузере:
+
+```
+http://localhost:3001/docs
+```
 
 ## Переменные окружения
 

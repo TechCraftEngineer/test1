@@ -14,12 +14,12 @@ export default () => {
     rabbitmq: {
       url: process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672',
       prefetch: parseInt(process.env.RABBITMQ_PREFETCH ?? '10', 10),
-      maxRetries: parseInt(process.env.RABBITMQ_CONSUMER_MAX_RETRIES ?? '3', 10),
     },
     telegram: {
       botToken,
       chatId,
       apiBaseUrl: 'https://api.telegram.org',
+      sendRetries: parseInt(process.env.TELEGRAM_SEND_RETRIES ?? '3', 10),
     },
   };
 };

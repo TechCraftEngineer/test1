@@ -12,6 +12,7 @@ async function bootstrap() {
   const port = app.get(ConfigService).get<number>('port') ?? 3002;
   await app.listen(port);
   Logger.log(`Consumer is running on port ${port}`, 'Bootstrap');
+  Logger.log(`Swagger: http://localhost:${port}/health`, 'Bootstrap');
 }
 
 bootstrap().catch((error) => {
