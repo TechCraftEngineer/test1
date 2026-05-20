@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -21,6 +21,7 @@ async function bootstrap() {
 
   const port = app.get(ConfigService).get<number>('port') ?? 3001;
   await app.listen(port);
+  Logger.log(`Producer is running on port ${port}`, 'Bootstrap');
 }
 
 bootstrap().catch((error) => {
