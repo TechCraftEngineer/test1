@@ -8,7 +8,7 @@ export class CreateEventDto {
     example: '0190f5e0-7e7b-7b5e-8b5e-0e7b5e8b5e0e',
   })
   @IsOptional()
-  @IsUUID()
+  @IsUUID('7')
   id?: string;
 
   @ApiProperty({ example: 'order.created' })

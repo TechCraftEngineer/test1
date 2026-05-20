@@ -1,7 +1,7 @@
-import { v7 as uuidv7 } from 'uuid';
 import { Injectable, Logger } from '@nestjs/common';
 import type { EventMessage } from '@repo/shared';
-import { RabbitMqService } from '../../infrastructure/rabbitmq/rabbitmq.service';
+import { v7 as uuidv7 } from 'uuid';
+import type { RabbitMqService } from '../../infrastructure/rabbitmq/rabbitmq.service';
 import type { CreateEventDto } from './dto/create-event.dto';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class EventsService {
 
     await this.rabbitmq.publishEvent(event);
     this.logger.log(`Event published: ${event.id} [${event.type}]`);
-    
+
     return event;
   }
 }

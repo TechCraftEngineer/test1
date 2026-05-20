@@ -5,7 +5,7 @@ import { EventResponseDto } from './dto/event-response.dto';
 import type { EventsService } from './events.service';
 
 @ApiTags('events')
-@Controller('v1/events')
+@Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 

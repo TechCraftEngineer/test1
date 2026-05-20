@@ -1,8 +1,13 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Injectable,
+  Logger,
+  type OnModuleDestroy,
+  type OnModuleInit,
+} from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import type { EventMessage } from '@repo/shared';
 import { RABBITMQ } from '@repo/shared';
 import * as amqp from 'amqplib';
-import type { EventMessage } from '@repo/shared';
 
 @Injectable()
 export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
@@ -36,12 +41,18 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
       throw new Error('RabbitMQ channel is not available');
     }
 
-    this.channel.publish(
+    const sent = this.channel.publish(
       RABBITMQ.EXCHANGE_EVENTS,
       RABBITMQ.ROUTING_KEY_EVENT,
       Buffer.from(JSON.stringify(event)),
       { persistent: true },
     );
+
+    if (!sent) {
+      const channel = this.channel;
+      await new Promise<void>((resolve) => channel.once('drain', resolve));
+    }
+
     await this.channel.waitForConfirms();
   }
 

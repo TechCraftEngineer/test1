@@ -33,7 +33,9 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
   ): void {
     this.notificationHandler = handler;
     if (this.initialized && !this.consuming) {
-      void this.startConsuming();
+      this.startConsuming().catch((err) => {
+        this.logger.error('Failed to start consuming notifications', err);
+      });
     }
   }
 
