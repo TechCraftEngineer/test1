@@ -1,6 +1,6 @@
 import { Injectable, type OnModuleInit } from '@nestjs/common';
-import type { EventProcessorService } from './event-processor.service';
-import type { RabbitMqService } from './rabbitmq/rabbitmq.service';
+import { EventProcessorService } from './event-processor.service';
+import { RabbitMqService } from './rabbitmq/rabbitmq.service';
 
 /**
  * Связывает RabbitMqService с EventProcessorService через DI,

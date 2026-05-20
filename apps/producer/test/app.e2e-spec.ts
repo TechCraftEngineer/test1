@@ -29,9 +29,9 @@ describe('Producer (e2e)', () => {
     await app.close();
   });
 
-  it('POST /api/v1/events validates and returns published event', () => {
+  it('POST /api/events validates and returns published event', () => {
     return request(app.getHttpServer())
-      .post('/api/v1/events')
+      .post('/api/events')
       .send({ type: 'order.created', payload: { orderId: 1 } })
       .expect(201)
       .expect((res) => {

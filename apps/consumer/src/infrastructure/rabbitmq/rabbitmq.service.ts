@@ -4,14 +4,18 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import {
   type EventMessage,
   type NotificationMessage,
   RABBITMQ,
   RETRY_HEADER,
+  RETRY_TTL_MS,
 } from '@repo/shared';
 import * as amqp from 'amqplib';
+
+const RECONNECT_DELAY_MS = 5000;
+const MAX_RECONNECT_ATTEMPTS = 10;
 
 @Injectable()
 export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
@@ -22,6 +26,8 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
   private eventHandler?: (event: EventMessage) => Promise<void>;
   private initialized = false;
   private consuming = false;
+  private isDestroyed = false;
+  private reconnectAttempts = 0;
 
   constructor(private readonly config: ConfigService) {}
 
@@ -70,7 +76,54 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     const prefetch = this.config.get<number>('rabbitmq.prefetch') ?? 10;
     await this.channel.prefetch(prefetch);
 
+    this.reconnectAttempts = 0;
     this.initialized = true;
+    this.logger.log('RabbitMQ connected');
+
+    this.connection.on('error', (err) => {
+      this.logger.error('RabbitMQ connection error', err);
+    });
+
+    this.connection.on('close', () => {
+      if (!this.isDestroyed) {
+        this.logger.warn('RabbitMQ connection closed, reconnecting...');
+        this.channel = undefined;
+        this.connection = undefined;
+        this.initialized = false;
+        this.consuming = false;
+        this.consumerTag = undefined;
+        void this.scheduleReconnect();
+      }
+    });
+
+    if (this.eventHandler && !this.consuming) {
+      await this.startConsuming();
+    }
+  }
+
+  private async scheduleReconnect(): Promise<void> {
+    if (this.isDestroyed) return;
+
+    if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      this.logger.error(
+        `RabbitMQ reconnect failed after ${MAX_RECONNECT_ATTEMPTS} attempts. Giving up.`,
+      );
+      return;
+    }
+
+    this.reconnectAttempts++;
+    this.logger.log(
+      `Reconnect attempt ${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${RECONNECT_DELAY_MS}ms`,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, RECONNECT_DELAY_MS));
+
+    try {
+      await this.connect();
+    } catch (err) {
+      this.logger.error('Reconnect attempt failed', err);
+      void this.scheduleReconnect();
+    }
   }
 
   private async startConsuming(): Promise<void> {
@@ -87,6 +140,7 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async disconnect(): Promise<void> {
+    this.isDestroyed = true;
     if (this.channel && this.consumerTag) {
       await this.channel.cancel(this.consumerTag);
     }
@@ -164,6 +218,9 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     await this.channel.assertExchange(RABBITMQ.EXCHANGE_NOTIFICATIONS, 'topic', {
       durable: true,
     });
+    await this.channel.assertExchange(RABBITMQ.EXCHANGE_NOTIFICATIONS_DLX, 'topic', {
+      durable: true,
+    });
 
     await this.channel.assertQueue(RABBITMQ.QUEUE_EVENTS_DLQ, { durable: true });
     await this.channel.bindQueue(
@@ -175,7 +232,7 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     await this.channel.assertQueue(RABBITMQ.QUEUE_EVENTS_RETRY, {
       durable: true,
       arguments: {
-        'x-message-ttl': 15000,
+        'x-message-ttl': RETRY_TTL_MS,
         'x-dead-letter-exchange': RABBITMQ.EXCHANGE_EVENTS,
         'x-dead-letter-routing-key': RABBITMQ.ROUTING_KEY_EVENT,
       },
@@ -199,7 +256,20 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
       RABBITMQ.ROUTING_KEY_EVENT,
     );
 
-    await this.channel.assertQueue(RABBITMQ.QUEUE_NOTIFICATIONS, { durable: true });
+    await this.channel.assertQueue(RABBITMQ.QUEUE_NOTIFICATIONS_DLQ, { durable: true });
+    await this.channel.bindQueue(
+      RABBITMQ.QUEUE_NOTIFICATIONS_DLQ,
+      RABBITMQ.EXCHANGE_NOTIFICATIONS_DLX,
+      RABBITMQ.ROUTING_KEY_NOTIFICATION_DLQ,
+    );
+
+    await this.channel.assertQueue(RABBITMQ.QUEUE_NOTIFICATIONS, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': RABBITMQ.EXCHANGE_NOTIFICATIONS_DLX,
+        'x-dead-letter-routing-key': RABBITMQ.ROUTING_KEY_NOTIFICATION_DLQ,
+      },
+    });
     await this.channel.bindQueue(
       RABBITMQ.QUEUE_NOTIFICATIONS,
       RABBITMQ.EXCHANGE_NOTIFICATIONS,

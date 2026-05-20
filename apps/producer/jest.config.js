@@ -1,4 +1,5 @@
 module.exports = {
+  preset: 'ts-jest',
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
@@ -11,6 +12,9 @@ module.exports = {
         },
       },
     ],
+  },
+  moduleNameMapper: {
+    '^uuid$': '<rootDir>/../__mocks__/uuid.ts',
   },
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: '../coverage',

@@ -23,7 +23,7 @@
         "noUnusedVariables": "warn"
       },
       "style": {
-        "useImportType": "error"
+        "useImportType": "off"
       },
       "suspicious": {
         "noExplicitAny": "warn"

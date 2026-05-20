@@ -1,6 +1,6 @@
 import { Injectable, type OnModuleInit } from '@nestjs/common';
-import type { NotificationHandlerService } from './notification-handler.service';
-import type { RabbitMqService } from './rabbitmq/rabbitmq.service';
+import { NotificationHandlerService } from './notification-handler.service';
+import { RabbitMqService } from './rabbitmq/rabbitmq.service';
 
 /**
  * Связывает RabbitMqService с NotificationHandlerService через DI,

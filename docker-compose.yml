@@ -25,7 +25,7 @@ services:
       - '3001:3001'
     environment:
       PRODUCER_PORT: 3001
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672}
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -42,7 +42,7 @@ services:
       - '3002:3002'
     environment:
       CONSUMER_PORT: 3002
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672}
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -61,7 +61,7 @@ services:
       - .env
     environment:
       TELEGRAM_PORT: 3003
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672}
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy

@@ -1,5 +1,5 @@
-import { EventsService } from './events.service';
 import type { RabbitMqService } from '../../infrastructure/rabbitmq/rabbitmq.service';
+import { EventsService } from './events.service';
 
 describe('EventsService', () => {
   const rabbitmq: jest.Mocked<Pick<RabbitMqService, 'publishEvent'>> = {
