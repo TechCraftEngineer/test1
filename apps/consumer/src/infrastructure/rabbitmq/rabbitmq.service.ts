@@ -4,13 +4,13 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <explanation>
 import { ConfigService } from '@nestjs/config';
 import {
   type EventMessage,
   type NotificationMessage,
   RABBITMQ,
   RETRY_HEADER,
+  RETRY_TTL_MS,
 } from '@repo/shared';
 import * as amqp from 'amqplib';
 
@@ -176,7 +176,7 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     await this.channel.assertQueue(RABBITMQ.QUEUE_EVENTS_RETRY, {
       durable: true,
       arguments: {
-        'x-message-ttl': 15000,
+        'x-message-ttl': RETRY_TTL_MS,
         'x-dead-letter-exchange': RABBITMQ.EXCHANGE_EVENTS,
         'x-dead-letter-routing-key': RABBITMQ.ROUTING_KEY_EVENT,
       },

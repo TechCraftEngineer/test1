@@ -15,3 +15,4 @@ export const RABBITMQ = {
 } as const;
 
 export const RETRY_HEADER = 'x-retry-count';
+export const RETRY_TTL_MS = 15000;

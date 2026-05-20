@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { EventMessage } from '@repo/shared';
-import { RABBITMQ } from '@repo/shared';
+import { RABBITMQ, RETRY_TTL_MS } from '@repo/shared';
 import * as amqp from 'amqplib';
 
 @Injectable()
@@ -76,7 +76,7 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     await this.channel.assertQueue(RABBITMQ.QUEUE_EVENTS_RETRY, {
       durable: true,
       arguments: {
-        'x-message-ttl': 5000,
+        'x-message-ttl': RETRY_TTL_MS,
         'x-dead-letter-exchange': RABBITMQ.EXCHANGE_EVENTS,
         'x-dead-letter-routing-key': RABBITMQ.ROUTING_KEY_EVENT,
       },
