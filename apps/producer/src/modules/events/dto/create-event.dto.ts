@@ -4,11 +4,11 @@ import { IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
 export class CreateEventDto {
   @ApiPropertyOptional({
     description:
-      'UUID события (для идемпотентности). Генерируется автоматически, если не указан.',
-    example: '550e8400-e29b-41d4-a716-446655440000',
+      'UUID v7 события (для идемпотентности). Генерируется автоматически, если не указан.',
+    example: '0190f5e0-7e7b-7b5e-8b5e-0e7b5e8b5e0e',
   })
   @IsOptional()
-  @IsUUID('4')
+  @IsUUID()
   id?: string;
 
   @ApiProperty({ example: 'order.created' })

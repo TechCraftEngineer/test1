@@ -5,7 +5,12 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import { type EventMessage, type NotificationMessage, RABBITMQ, RETRY_HEADER } from '@repo/shared';
+import {
+  type EventMessage,
+  type NotificationMessage,
+  RABBITMQ,
+  RETRY_HEADER,
+} from '@repo/shared';
 import * as amqp from 'amqplib';
 
 @Injectable()
@@ -15,6 +20,8 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
   private channel?: amqp.Channel;
   private consumerTag?: string;
   private eventHandler?: (event: EventMessage) => Promise<void>;
+  private initialized = false;
+  private consuming = false;
 
   constructor(private readonly config: ConfigService) {}
 
@@ -28,6 +35,9 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
 
   setEventHandler(handler: (event: EventMessage) => Promise<void>): void {
     this.eventHandler = handler;
+    if (this.initialized && !this.consuming) {
+      void this.startConsuming();
+    }
   }
 
   async publishNotification(notification: NotificationMessage): Promise<void> {
@@ -60,12 +70,19 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     const prefetch = this.config.get<number>('rabbitmq.prefetch') ?? 10;
     await this.channel.prefetch(prefetch);
 
+    this.initialized = true;
+  }
+
+  private async startConsuming(): Promise<void> {
+    if (!this.channel || this.consuming) return;
+
     const { consumerTag } = await this.channel.consume(
       RABBITMQ.QUEUE_EVENTS,
       (msg) => void this.handleMessage(msg),
       { noAck: false },
     );
     this.consumerTag = consumerTag;
+    this.consuming = true;
     this.logger.log('Consuming events.queue (manual ack)');
   }
 
@@ -106,10 +123,23 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
       );
 
       if (retryCount < maxRetries) {
-        channel.nack(msg, false, false);
+        const headers = { ...msg.properties.headers, [RETRY_HEADER]: retryCount + 1 };
+        channel.publish(
+          RABBITMQ.EXCHANGE_EVENTS_DLX,
+          RABBITMQ.ROUTING_KEY_RETRY,
+          msg.content,
+          { headers, persistent: true },
+        );
+        channel.ack(msg);
         this.logger.warn(`Event ${event.id} scheduled for retry via DLX`);
       } else {
-        channel.nack(msg, false, false);
+        channel.publish(
+          RABBITMQ.EXCHANGE_EVENTS_DLX,
+          RABBITMQ.ROUTING_KEY_DLQ,
+          msg.content,
+          { headers: msg.properties.headers, persistent: true },
+        );
+        channel.ack(msg);
         this.logger.error(`Event ${event.id} exceeded max retries → DLQ`);
       }
     }

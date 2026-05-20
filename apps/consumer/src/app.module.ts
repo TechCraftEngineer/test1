@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './common/config/configuration';
-import { EventProcessorService } from './infrastructure/event-processor.service';
-import { IdempotencyModule } from './infrastructure/idempotency/idempotency.module';
+import { ConsumerBootstrapService } from './infrastructure/consumer-bootstrap.service';
+import { EventProcessorModule } from './infrastructure/event-processor.module';
 import { RabbitMqModule } from './infrastructure/rabbitmq/rabbitmq.module';
 import { HealthModule } from './modules/health/health.module';
 
@@ -10,9 +10,9 @@ import { HealthModule } from './modules/health/health.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     RabbitMqModule,
-    IdempotencyModule,
+    EventProcessorModule,
     HealthModule,
   ],
-  providers: [EventProcessorService],
+  providers: [ConsumerBootstrapService],
 })
 export class AppModule {}
