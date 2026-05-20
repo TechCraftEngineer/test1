@@ -5,7 +5,12 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import { type EventMessage, type NotificationMessage, RABBITMQ, RETRY_HEADER } from '@repo/shared';
+import {
+  type EventMessage,
+  type NotificationMessage,
+  RABBITMQ,
+  RETRY_HEADER,
+} from '@repo/shared';
 import * as amqp from 'amqplib';
 
 @Injectable()

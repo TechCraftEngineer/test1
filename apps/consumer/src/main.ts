@@ -1,26 +1,18 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import type { EventMessage } from '@repo/shared';
 import { AppModule } from './app.module';
-import { EventProcessorService } from './infrastructure/event-processor.service';
-import { RabbitMqService } from './infrastructure/rabbitmq/rabbitmq.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const config = new DocumentBuilder()
-    .setTitle('EventPing — Consumer')
-    .setDescription('Обработка событий из RabbitMQ с ack/nack и ретраями')
-    .setVersion('1.0')
-    .build();
-  SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, config));
+  // Consumer — headless сервис без публичного HTTP API.
+  // Wiring RabbitMQ → EventProcessorService выполняется через ConsumerBootstrapService (OnModuleInit).
 
-  const eventProcessor = app.get(EventProcessorService);
-  const rabbitmq = app.get(RabbitMqService);
-  rabbitmq.setEventHandler((event: EventMessage) => eventProcessor.process(event));
-
-  const port = process.env.CONSUMER_PORT ?? 3002;
+  const port = app.get(ConfigService).get<number>('port') ?? 3002;
   await app.listen(port);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Consumer failed to start', error);
+  process.exit(1);
+});

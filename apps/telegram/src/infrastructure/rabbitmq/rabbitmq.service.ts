@@ -28,7 +28,9 @@ export class RabbitMqService implements OnModuleInit, OnModuleDestroy {
     return this.disconnect();
   }
 
-  setNotificationHandler(handler: (notification: NotificationMessage) => Promise<void>): void {
+  setNotificationHandler(
+    handler: (notification: NotificationMessage) => Promise<void>,
+  ): void {
     this.notificationHandler = handler;
     if (this.initialized && !this.consuming) {
       void this.startConsuming();

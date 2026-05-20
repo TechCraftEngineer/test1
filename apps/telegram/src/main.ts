@@ -1,14 +1,17 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import type { NotificationMessage } from '@repo/shared';
 import { AppModule } from './app.module';
-import { NotificationHandlerService } from './infrastructure/notification-handler.service';
-import { RabbitMqService } from './infrastructure/rabbitmq/rabbitmq.service';
+import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // Wiring RabbitMQ → NotificationHandlerService выполняется через NotificationBootstrapService (OnModuleInit).
 
   const config = new DocumentBuilder()
     .setTitle('EventPing — Telegram')
@@ -17,12 +20,11 @@ async function bootstrap() {
     .build();
   SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, config));
 
-  const notificationHandler = app.get(NotificationHandlerService);
-  const rabbitmq = app.get(RabbitMqService);
-  rabbitmq.setNotificationHandler((notification: NotificationMessage) => notificationHandler.handle(notification));
-
-  const port = parseInt(process.env.TELEGRAM_PORT ?? '3003', 10);
+  const port = app.get(ConfigService).get<number>('port') ?? 3003;
   await app.listen(port);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Telegram service failed to start', error);
+  process.exit(1);
+});
