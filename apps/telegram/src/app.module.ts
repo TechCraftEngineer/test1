@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { HealthModule } from '@repo/health';
 import configuration from './common/config/configuration';
 import { NotificationBootstrapService } from './infrastructure/notification-bootstrap.service';
 import { NotificationHandlerService } from './infrastructure/notification-handler.service';
 import { RabbitMqModule } from './infrastructure/rabbitmq/rabbitmq.module';
 import { TelegramModule } from './infrastructure/telegram/telegram.module';
-import { HealthModule } from './modules/health/health.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -17,7 +17,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     }),
     TelegramModule,
     RabbitMqModule,
-    HealthModule,
+    HealthModule.forService('telegram'),
     NotificationsModule,
   ],
   providers: [NotificationHandlerService, NotificationBootstrapService],
